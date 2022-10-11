@@ -1,4 +1,4 @@
-from src.database import Base
+from app.database import Base
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 
 
@@ -22,12 +22,12 @@ class OrderDB(Base):
         return f"Order(product_id={self.product_id}, quatity={self.quantity})"
 
 
-class OrdersDB(Base):
-    __tablename__ = 'orders'
+class PurchaseDB(Base):
+    __tablename__ = 'purchase'
     id = Column(Integer, primary_key=True)
     name = Column(String(80), nullable=False)
     address = Column(String(80), nullable=False)
     order_id = Column(Integer, ForeignKey('order.id'), primary_key=True)
 
     def __repr__(self):
-        return f"Order(name='{self.name}', address={self.address}, order_id={self.order_id})"
+        return f"Purchase(name='{self.name}', address={self.address}, order_id={self.order_id})"
