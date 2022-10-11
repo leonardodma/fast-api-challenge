@@ -1,5 +1,6 @@
-from app.database import Base
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
+Base = declarative_base()
 
 
 class ItemDB(Base):

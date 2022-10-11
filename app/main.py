@@ -1,17 +1,9 @@
 import os.path
 from fastapi import status
-from app import app
-from app.base_models import Item, Order, Purchase
-from app.database.models import ItemDB, OrderDB, PurchaseDB
-from app.database import Session, Base, engine
+from app import app, Item, Order, Purchase
+from app.database import db, ItemDB, OrderDB, PurchaseDB
+from app.utils import remove_from_db
 from propreties import SQLITE_DATA_PATH
-
-
-db = Session()
-
-# Create the database if it doesn't exist
-if not os.path.isfile(SQLITE_DATA_PATH):
-    Base.metadata.create_all(engine)
 
 
 @app.get("/items/{item_id}", tags=["Items"], status_code=status.HTTP_200_OK)
@@ -71,6 +63,8 @@ async def create_purchase(purchase: Purchase):
         item_obj = db.query(ItemDB).filter(
             ItemDB.id == item.product_id).first()
         if item_obj is None:
+            # Remove the order from the database
+            remove_from_db(order_list, purchase_list)
             return {"message": f"Item with id {item.product_id} were not found"}
 
         # check if the order is valid
@@ -79,14 +73,7 @@ async def create_purchase(purchase: Purchase):
                                 quantity=item.quantity)
         except:
             # Remove the order from the database
-            for id in order_list:
-                db.query(OrderDB).filter(OrderDB.id == id).delete()
-
-            # Remove the purchases from the database
-            for id in purchase_list:
-                db.query(PurchaseDB).filter(PurchaseDB.id == id).delete()
-
-            db.commit()
+            remove_from_db(order_list, purchase_list)
             return status.HTTP_422_UNPROCESSABLE_ENTITY
 
         # Put the order in the invoice
